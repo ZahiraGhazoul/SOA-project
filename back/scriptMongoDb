@@ -1,0 +1,24 @@
+const MongoClient = require('mongodb').MongoClient;
+const data = require('/home/zahiraaghazoul/Documents/cloudnativeapp/frontend/src/mockData/items.json');
+
+const url = 'mongodb://localhost:27017';
+const dbName = 'productsDB';
+
+async function insertData() {
+  const client = new MongoClient(url);
+
+  try {
+    await client.connect();
+    const db = client.db(dbName);
+    const collection = db.collection('products');
+    await collection.insertMany(data);
+    console.log('Data inserted successfully');
+  } catch (error) {
+    console.error('Error inserting data:', error);
+  } finally {
+    client.close();
+  }
+}
+
+insertData();
+

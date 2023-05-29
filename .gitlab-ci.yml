@@ -1,0 +1,75 @@
+stages:
+  - build
+  - test
+  - package
+  - publish
+
+frontend:
+  image: docker:latest
+  stage: build
+  script:
+    - docker build -t frontend-image .
+  only:
+    - master
+
+frontend_test:
+  image: node:latest
+  stage: test
+  script:
+    - npm install
+    - npm run test
+  only:
+    - master
+
+frontend_package:
+  image: docker:latest
+  stage: package
+  script:
+    - npm run build
+  only:
+    - master
+
+frontend_publish:
+  image: docker:latest
+  stage: publish
+  script:
+    - docker tag frontend-image ghazoulzahira/cloudminiproject/frontend-image:latest
+    - docker push ghazoulzahira/cloudminiproject/frontend-image:latest
+  only:
+    - master
+
+backend:
+  image: docker:latest
+  stage: build
+  script:
+    - docker build -t backend-image .
+  only:
+    - master
+
+backend_test:
+  image: node:latest
+  stage: test
+  script:
+    - npm install
+    - npm run test
+  only:
+    - master
+
+backend_package:
+  image: docker:latest
+  stage: package
+  script:
+    - npm run build
+  only:
+    - master
+
+backend_publish:
+  image: docker:latest
+  stage: publish
+  script:
+    - docker tag backend-image ghazoulzahira/cloudminiproject/backend-image:latest
+    - docker push ghazoulzahira/cloudminiproject/backend-image:latest
+    
+  only:
+    - master
+

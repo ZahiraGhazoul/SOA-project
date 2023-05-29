@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  mongodb-service:
+    image: mongo:5.0
+    container_name: mongodb-service
+    ports:
+      - 27017:27017
+    networks:
+      - appnetwork
+    volumes:
+      - dbvol:/data/db
+      - dbvolconfig:/data/configdb
+
+  backend:
+    image: backend-image
+    container_name: backend
+    ports:
+      - 1234:1234
+    networks:
+      - appnetwork
+    depends_on:
+      - mongodb-service
+
+  frontend:
+    image: frontend-image
+    container_name: frontend
+    ports:
+      - 3000:80
+    networks:
+      - appnetwork
+    depends_on:
+      - backend
+
+volumes:
+  dbvol:
+    driver: local
+  dbvolconfig:
+    driver: local
+
+networks:
+  appnetwork:
+    driver: bridge
+

@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-conf
+data:
+  host: mongodb-service
+  dbname: exam
+  authSource: admin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector:
+    app: backend
+  ports:
+  - port: 1234
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: backend-image
+        ports:
+        - containerPort: 1234
+          name: backend-port
+        livenessProbe:
+          httpGet:
+            port: backend-port
+            path: /health
+          failureThreshold: 1
+          periodSeconds: 10
+        startupProbe:
+          httpGet:
+            port: backend-port
+            path: /health
+          failureThreshold: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            port: backend-port
+            path: /ready
+          failureThreshold: 1
+          periodSeconds: 10
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-conf
+              key: host
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-conf
+              key: dbname
+        - name: AUTH_SOURCE
+          valueFrom:
+            configMapKeyRef:
+              name: mongodb-conf
+              key: authSource
+        - name: MONGO_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: username
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: password
+
